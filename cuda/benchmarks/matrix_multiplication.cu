@@ -98,7 +98,7 @@ __global__ void gpu_matrix_multiplication_2(double* x, double* y, double* z, int
                     x_tile[z_i * tile_size + z_j] = 0;
                 }
                 if ((j < N) && (curr_block_index * tile_size + z_i < N)) {
-                    y_tile[z_i * tile_size + z_j] = y[N * j + curr_block_index * tile_size + z_i];
+                    y_tile[z_i * tile_size + z_j] = y[N * (curr_block_index * tile_size + z_i) + j];
                 } else {
                     y_tile[z_i * tile_size + z_j] = 0;
                 }
@@ -226,6 +226,25 @@ void MatrixMultiplication::matrix_multiplication_2(int iter) {
     cudaMemcpy(z, z_d, sizeof(double) * N * N, cudaMemcpyDeviceToHost);
 }
 
+// In this example, use CUBLAS;
+void MatrixMultiplication::matrix_multiplication_3(int iter) {
+    auto start_tmp = clock_type::now();
+    double alpha = 1;
+    double beta = 0;
+    // You can pass CUBLAS_OP_T (instead of CUBLAS_OP_N) to say that matrices should be transposed;
+    cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, N, N, N, &alpha, x_d, N, y_d, N, &beta, z_d, N);
+    // Print performance of GPU, not accounting for transfer time;
+    if (debug) {
+        // Synchronize computation by hand to measure GPU exec. time;
+        cudaDeviceSynchronize();
+        auto end_tmp = clock_type::now();
+        auto exec_time = chrono::duration_cast<chrono::microseconds>(end_tmp - start_tmp).count();
+        std::cout << "  pure GPU execution(" << iter << ")=" << double(exec_time) / 1000 << " ms, " << (3 * sizeof(double) * N * N / (exec_time * 1e3)) << " GB/s" << std::endl;
+    }
+
+    // Copy the partial result from the GPU to the CPU;
+    cudaMemcpy(z, z_d, sizeof(double) * N * N, cudaMemcpyDeviceToHost);
+}
 
 void MatrixMultiplication::execute(int iter) {
     switch (implementation)
@@ -238,6 +257,9 @@ void MatrixMultiplication::execute(int iter) {
         break;
     case 2:
         matrix_multiplication_2(iter);
+        break;
+    case 3:
+        matrix_multiplication_3(iter);
         break;
     default:
         break;
@@ -299,4 +321,5 @@ void MatrixMultiplication::clean() {
     cudaFree(x_d);
     cudaFree(y_d);
     cudaFree(z_d);
+    cublasDestroy(handle);
 }

@@ -28,11 +28,15 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
+#include "cublas_v2.h"
 #include "../benchmark.cuh"
 
 class MatrixMultiplication : public Benchmark {
    public:
-    MatrixMultiplication(Options &options) : Benchmark(options) {}
+    MatrixMultiplication(Options &options) : Benchmark(options) {
+        // Create cuBLAS handle;
+        cublasCreate(&handle);
+    }
     void alloc();
     void init();
     void reset();
@@ -46,9 +50,11 @@ class MatrixMultiplication : public Benchmark {
     double *x_d, *y_d, *z_d;
     double gpu_checksum = 0;
     int B = 0;
+    cublasHandle_t handle;  
 
     // Implementations of the algorithm;
     void matrix_multiplication_0(int iter);
     void matrix_multiplication_1(int iter);
     void matrix_multiplication_2(int iter);
+    void matrix_multiplication_3(int iter);
 };
