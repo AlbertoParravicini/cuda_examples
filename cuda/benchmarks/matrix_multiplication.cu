@@ -211,7 +211,7 @@ void MatrixMultiplication::matrix_multiplication_2(int iter) {
     // Call the GPU computation. In this case, the number of blocks is chosen by the user;
     dim3 block_num_2d(num_blocks, num_blocks);
     dim3 block_size_2d(block_size, block_size);
-    gpu_matrix_multiplication_2<<<block_num_2d, block_size_2d, sizeof(double) * block_size * block_size>>>(x_d, y_d, z_d, N);
+    gpu_matrix_multiplication_2<<<block_num_2d, block_size_2d, 2 * sizeof(double) * block_size * block_size>>>(x_d, y_d, z_d, N);
 
     // Print performance of GPU, not accounting for transfer time;
     if (debug) {
