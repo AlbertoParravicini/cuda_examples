@@ -79,8 +79,8 @@ void Benchmark::run() {
         if (i >= skip_iterations) tot_time += exec_time;
 
         if (debug) {
-            std::cout << "  result=" << print_result() << std::endl;
-            std::cout << "  execution(" << i << ")=" << float(exec_time) / 1000 << " ms" << std::endl;
+            std::cout << "  GPU execution(" << i << ")=" << float(exec_time) / 1000 << " ms" << std::endl;
+            std::cout << "  GPU result=" << print_result() << std::endl;
             if (do_cpu_validation) cpu_validation(i);
         } else {
             std::cout << i << "," << print_result(true) << "," << float(reset_time + exec_time) / 1e6 << "," << float(reset_time) / 1e6 << "," << float(exec_time) / 1e6 << std::endl;

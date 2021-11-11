@@ -42,11 +42,14 @@ class VectorSum : public Benchmark {
     std::string print_result(bool short_form = false);
 
    private:
-    float *x, *res_tmp;
-    float res = 0.0;
-    float *x_d, *res_tmp_d;
+    double *x, *res_tmp;
+    double res = 0.0;
+    double *x_d, *res_tmp_d;
     int B = 0;
+    double cpu_result;
 
     // Implementations of the algorithm;
-    void vector_sum_1();
+    void vector_sum_0(int iter);
+    void vector_sum_1(int iter);
+    void vector_sum_2(int iter);
 };
