@@ -99,7 +99,7 @@ __global__ void gpu_vector_sum_2(double *x, double *res, int N) {
 // Allocate data on the CPU and GPU;
 void VectorSum::alloc() {
     // Compute the number of blocks for implementations where the value is a function of the input size;
-    B = (N + block_size_1d - 1) / block_size_1d;
+    B = (N + block_size - 1) / block_size;
     // Allocate CPU data;
     x = (double*) malloc(sizeof(double) * N);
     res_tmp = (double*) malloc(sizeof(double) * B);
@@ -132,10 +132,10 @@ void VectorSum::reset() {
 void VectorSum::vector_sum_0(int iter) {
     auto start_tmp = clock_type::now();
     // Call the GPU computation (and set the size of shared memory!);
-    gpu_vector_sum_0<<<B, block_size_1d, sizeof(double) * block_size_1d>>>(x_d, res_tmp_d, N);
-    int second_block_size = (B + block_size_1d - 1) / block_size_1d; // Do it again, to further reduce the amount of data to move back to CPU;
+    gpu_vector_sum_0<<<B, block_size, sizeof(double) * block_size>>>(x_d, res_tmp_d, N);
+    int second_block_size = (B + block_size - 1) / block_size; // Do it again, to further reduce the amount of data to move back to CPU;
     if (second_block_size > 0) { // If the input data is small enough, this second step is not necessary;
-        gpu_vector_sum_0<<<second_block_size, block_size_1d, sizeof(double) * block_size_1d>>>(res_tmp_d, res_tmp_d, B);
+        gpu_vector_sum_0<<<second_block_size, block_size, sizeof(double) * block_size>>>(res_tmp_d, res_tmp_d, B);
     } else {
         second_block_size = B;
     }
@@ -161,10 +161,10 @@ void VectorSum::vector_sum_0(int iter) {
 void VectorSum::vector_sum_1(int iter) {
     auto start_tmp = clock_type::now();
     // Call the GPU computation (and set the size of shared memory!);
-    gpu_vector_sum_1<<<B, block_size_1d, sizeof(double) * block_size_1d>>>(x_d, res_tmp_d, N);
-    int second_block_size = (B + block_size_1d - 1) / block_size_1d; // Do it again, to further reduce the amount of data to move back to CPU;
+    gpu_vector_sum_1<<<B, block_size, sizeof(double) * block_size>>>(x_d, res_tmp_d, N);
+    int second_block_size = (B + block_size - 1) / block_size; // Do it again, to further reduce the amount of data to move back to CPU;
     if (second_block_size > 0) { // If the input data is small enough, this second step is not necessary;
-        gpu_vector_sum_1<<<second_block_size, block_size_1d, sizeof(double) * block_size_1d>>>(res_tmp_d, res_tmp_d, B);
+        gpu_vector_sum_1<<<second_block_size, block_size, sizeof(double) * block_size>>>(res_tmp_d, res_tmp_d, B);
     } else {
         second_block_size = B;
     }
@@ -193,7 +193,7 @@ void VectorSum::vector_sum_1(int iter) {
 void VectorSum::vector_sum_2(int iter) {
     auto start_tmp = clock_type::now();
     // Call the GPU computation (and set the size of shared memory!);
-    gpu_vector_sum_2<<<num_blocks, block_size_1d>>>(x_d, res_tmp_d, N);
+    gpu_vector_sum_2<<<num_blocks, block_size>>>(x_d, res_tmp_d, N);
     
     // Print performance of GPU, not accounting for transfer time;
     if (debug) {

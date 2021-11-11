@@ -42,8 +42,7 @@
 
 #define DEBUG false
 #define NUM_ITER 30
-#define DEFAULT_BLOCK_SIZE_1D 32
-#define DEFAULT_BLOCK_SIZE_2D 8
+#define DEFAULT_BLOCK_SIZE 32
 #define DEFAULT_NUM_BLOCKS 64
 #define DEFAULT_SKIP 3
 #define DEFAULT_BENCHMARK "vec"
@@ -55,6 +54,7 @@
 
 enum BenchmarkEnum {
     VEC,
+    MMUL,
     ERR
 };
 
@@ -64,6 +64,8 @@ enum BenchmarkEnum {
 inline BenchmarkEnum get_benchmark(std::string benchmark) {
     if (benchmark == "vec")
         return BenchmarkEnum::VEC;
+    if (benchmark == "mmul")
+        return BenchmarkEnum::MMUL;
     else
         return BenchmarkEnum::ERR;
 }
@@ -72,8 +74,7 @@ struct Options {
     // Testing options;
     uint num_iter = NUM_ITER;
     int debug = DEBUG;
-    int block_size_1d = DEFAULT_BLOCK_SIZE_1D;
-    int block_size_2d = DEFAULT_BLOCK_SIZE_2D;
+    int block_size = DEFAULT_BLOCK_SIZE;
     int num_blocks = DEFAULT_NUM_BLOCKS;
     int N = 0;
     int skip_iterations = DEFAULT_SKIP;
@@ -90,14 +91,14 @@ struct Options {
 
     Options(int argc, char *argv[]) {
         map_init(benchmark_map)
-                (BenchmarkEnum::VEC, "vec");
+                (BenchmarkEnum::VEC, "vec")
+                (BenchmarkEnum::MMUL, "mmul");
 
         int opt;
         static struct option long_options[] = {{"debug", no_argument, 0, 'd'},
                                                {"num_iter", required_argument, 0, 'i'},
                                                {"N", required_argument, 0, 'n'},
-                                               {"block_size_1d", required_argument, 0, 't'},
-                                               {"block_size_2d", required_argument, 0, 'T'},
+                                               {"block_size", required_argument, 0, 't'},
                                                {"num_blocks", required_argument, 0, 'B'},
                                                {"skip_first", required_argument, 0, 's'},
                                                {"benchmark", required_argument, 0, 'b'},
@@ -108,7 +109,7 @@ struct Options {
         // getopt_long stores the option index here;
         int option_index = 0;
 
-        while ((opt = getopt_long(argc, argv, "di:n:t:T:B:s:b:vI:c", long_options, &option_index)) != EOF) {
+        while ((opt = getopt_long(argc, argv, "di:n:t:B:s:b:vI:c", long_options, &option_index)) != EOF) {
             switch (opt) {
                 case 'd':
                     debug = true;
@@ -120,10 +121,7 @@ struct Options {
                     N = atoi(optarg);
                     break;
                 case 't':
-                    block_size_1d = atoi(optarg);
-                    break;
-                case 'T':
-                    block_size_2d = atoi(optarg);
+                    block_size = atoi(optarg);
                     break;
                 case 'B':
                     num_blocks = atoi(optarg);

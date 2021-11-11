@@ -34,7 +34,7 @@ FLAGS = -O3 -std=c++11 -arch=sm_75
 
 BIN_FOLDER=bin
 FILES=main.cu mmio.cpp benchmark.cu
-GPU_FILES=benchmarks/vector_sum.cu 
+GPU_FILES=benchmarks/vector_sum.cu benchmarks/matrix_multiplication.cu 
 .PHONY: all clean
 
 all:

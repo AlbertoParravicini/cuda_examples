@@ -49,8 +49,7 @@ struct Benchmark {
     Benchmark(Options &options) : debug(options.debug),
                                   num_executions(options.num_iter),
                                   N(options.N),
-                                  block_size_1d(options.block_size_1d),
-                                  block_size_2d(options.block_size_2d),
+                                  block_size(options.block_size),
                                   num_blocks(options.num_blocks),
                                   implementation(options.implementation),
                                   skip_iterations(options.skip_iterations),
@@ -65,9 +64,8 @@ struct Benchmark {
             std::cout << "- iterations to skip=" << skip_iterations << std::endl;
             std::cout << "- N=" << N << std::endl;
             std::cout << "- implementation number to use (where applicable)=" << implementation << std::endl;
-            std::cout << "- block size 1d=" << block_size_1d << std::endl;
-            std::cout << "- block size 2d (where applicable)=" << block_size_2d << std::endl;
-            std::cout << "- num blocks (where applicable)=" << num_blocks << std::endl;
+            std::cout << "- block size (1D)=" << block_size << std::endl;
+            std::cout << "- num blocks (1D, where applicable)=" << num_blocks << std::endl;
             std::cout << "- nvprof support=" << nvprof << std::endl;
             std::cout << "- do cpu validation=" << do_cpu_validation << std::endl;
             std::cout << "------------------------------" << std::endl;
@@ -80,8 +78,7 @@ struct Benchmark {
     int debug = DEBUG;
     int num_executions = NUM_ITER;
     int N = 0;
-    int block_size_1d = DEFAULT_BLOCK_SIZE_1D;
-    int block_size_2d = DEFAULT_BLOCK_SIZE_2D;
+    int block_size = DEFAULT_BLOCK_SIZE;
     int num_blocks = DEFAULT_NUM_BLOCKS;
     int skip_iterations = 0;
     int pascalGpu = 0;
