@@ -102,6 +102,7 @@ void VectorSum::alloc() {
     B = (N + block_size - 1) / block_size;
     // Allocate CPU data;
     x = (double*) malloc(sizeof(double) * N);
+    // cudaMallocHost(&x, sizeof(double) * N); // You can use cudaMallocHost to get faster transfer speed. Don't use it too much though, it slows down CPU memory;
     res_tmp = (double*) malloc(sizeof(double) * B);
     // Allocate GPU data;
     err = cudaMalloc(&x_d, sizeof(double) * N);
@@ -192,7 +193,7 @@ void VectorSum::vector_sum_1(int iter) {
 //   I could have allocated an array of size 1, instead;
 void VectorSum::vector_sum_2(int iter) {
     auto start_tmp = clock_type::now();
-    // Call the GPU computation (and set the size of shared memory!);
+    // Call the GPU computation;
     gpu_vector_sum_2<<<num_blocks, block_size>>>(x_d, res_tmp_d, N);
     
     // Print performance of GPU, not accounting for transfer time;

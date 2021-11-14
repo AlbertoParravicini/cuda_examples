@@ -64,6 +64,39 @@ __global__ void gpu_matrix_multiplication_1(double* x, double* y, double* z, int
     }
 }
 
+// #define BLOCK_DIM 16
+// __global__ void gpu_matrix_multiplication_2(double* x, double* y, double* z, int N) {
+
+//     int tile_size = BLOCK_DIM;
+//     int z_block_i = blockIdx.x;
+//     int z_block_j = blockIdx.y;
+//     // Coordinate of the Z matrix element computed by this specific thread, with respect to the current tile;
+//     int z_i = threadIdx.x;
+//     int z_j = threadIdx.y;
+//     // Coordinate of the Z matrix element computed by this specific thread, with respect to the overall Z matrix (not counting host-level data partitioning);
+//     int i = z_block_i * blockDim.x + threadIdx.x;
+//     int j = z_block_j * blockDim.y + threadIdx.y;
+
+//     // Value of the Z matrix block being computed by this specific thread;
+//     double z_val_ij = 0;
+
+//     // Loop over the tiles in the same row (for X) and column (for Y) of the desired output tile in Z;
+//     for (int curr_block_index = 0; curr_block_index < N / tile_size; curr_block_index++) {
+//         // Shared memory used to store the current tiles of X and Y;
+//         __shared__ double x_tile[BLOCK_DIM][BLOCK_DIM];
+//         __shared__ double y_tile[BLOCK_DIM][BLOCK_DIM];
+//         x_tile[z_i][z_j] = x[N * i + curr_block_index * tile_size + z_j];
+//         y_tile[z_i][z_j] = y[N * (z_i + curr_block_index * tile_size) + j];
+//         __syncthreads();
+//         // Multiply the i row and j column of the tile;
+//         for (int k = 0; k < tile_size; k++) {   
+//             z_val_ij += x_tile[z_i][k] * y_tile[k][z_j];
+//         }
+//         __syncthreads();
+//     }
+//     z[i * N + j] = z_val_ij;
+// }
+
 // Better implementation, using shared memory to compute square tiles of z;
 __global__ void gpu_matrix_multiplication_2(double* x, double* y, double* z, int N) {
 
