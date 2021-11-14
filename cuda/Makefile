@@ -33,8 +33,9 @@ CXX=nvcc
 FLAGS = -O3 -std=c++11 -arch=sm_75 -lcublas
 
 BIN_FOLDER=bin
-FILES=main.cu mmio.cpp benchmark.cu
-GPU_FILES=benchmarks/vector_sum.cu benchmarks/matrix_multiplication.cu 
+SRC_FOLDER=src
+FILES=${SRC_FOLDER}/main.cu ${SRC_FOLDER}/mmio.cpp ${SRC_FOLDER}/benchmark.cu
+GPU_FILES=${SRC_FOLDER}/benchmarks/vector_sum.cu ${SRC_FOLDER}/benchmarks/matrix_multiplication.cu 
 .PHONY: all clean
 
 all:
