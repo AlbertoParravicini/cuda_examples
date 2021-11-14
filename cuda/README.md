@@ -18,6 +18,8 @@ Currently, two algorithms are available:
 bin/b -d -c -n 1000 -b vec -I 1 -i 30 -t 32 -B 64
 ```
 
+**Warning:** If running on Kepler GPUs (E.g. Nvidia K80), change branch with `git checkout kepler` to run code compatible with this GPU. The only difference is that the VectorSym example uses single-precision floating-point arithmetic, as `atomicAdd` on double-precision was not available in this architecture. Be aware of numerical issues when using large inputs and single-precision arithmetic! 
+
 **Options**
 * `-n`: size of the benchmark, e.g. number of elements in a vector or number of rows/colums in a square matrix
 * `-i`: number of repetitions of the test (30 by default)
