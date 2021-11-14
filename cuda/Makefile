@@ -30,7 +30,7 @@
 # Use NVCC.
 # Set the appropriate GPU architecture, check https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
 CXX=nvcc
-FLAGS = -O3 -std=c++11 -arch=sm_35 -lcublas
+FLAGS = -O3 -std=c++11 -arch=sm_75 -lcublas
 
 BIN_FOLDER=bin
 FILES=main.cu mmio.cpp benchmark.cu
