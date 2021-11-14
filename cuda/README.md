@@ -15,7 +15,7 @@ Currently, two algorithms are available:
 ## Run the code
 
 ```
-bin/b -d -c -n 1000 -b vec -I 1 -i 30 -t -B 64
+bin/b -d -c -n 1000 -b vec -I 1 -i 30 -t 32 -B 64
 ```
 
 **Options**
