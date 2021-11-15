@@ -36,6 +36,7 @@
 
 #include "benchmarks/vector_sum.cuh"
 #include "benchmarks/matrix_multiplication.cuh"
+#include "benchmarks/personalized_pagerank.cuh"
 
 int main(int argc, char *argv[])
 {
@@ -53,6 +54,9 @@ int main(int argc, char *argv[])
         break;
     case BenchmarkEnum::MMUL:
         b = new MatrixMultiplication(options);
+        break;
+    case BenchmarkEnum::PPR:
+        b = new PersonalizedPageRank(options);
         break;
     default:
         break;
