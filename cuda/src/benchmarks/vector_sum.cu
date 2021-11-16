@@ -35,8 +35,8 @@ using clock_type = chrono::high_resolution_clock;
 //////////////////////////////
 //////////////////////////////
 
-__global__ void gpu_vector_sum_0(double *x, double *res_tmp, int N) {
-    extern __shared__ double shared_data[];
+__global__ void gpu_vector_sum_0(float *x, float *res_tmp, int N) {
+    extern __shared__ float shared_data[];
     // each thread loads one element from global to shared mem (warning: no boundary checks!)
     unsigned int tid = threadIdx.x;
     unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -53,8 +53,8 @@ __global__ void gpu_vector_sum_0(double *x, double *res_tmp, int N) {
     if (tid == 0) res_tmp[blockIdx.x] = shared_data[0];
 }
 
-__global__ void gpu_vector_sum_1(double *x, double *res_tmp, int N) {
-    extern __shared__ double shared_data[];
+__global__ void gpu_vector_sum_1(float *x, float *res_tmp, int N) {
+    extern __shared__ float shared_data[];
     // each thread loads one element from global to shared mem (warning: no boundary checks!)
     unsigned int tid = threadIdx.x;
     unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -75,16 +75,16 @@ __global__ void gpu_vector_sum_1(double *x, double *res_tmp, int N) {
 
 // Used to sum the values in a warp;
 #define WARP_SIZE 32
-__inline__ __device__ double warp_reduce(double val) {
+__inline__ __device__ float warp_reduce(float val) {
     for (int offset = WARP_SIZE / 2; offset > 0; offset /= 2)
         val += __shfl_down_sync(0xFFFFFFFF, val, offset);
     return val;
 }
 
-// Note: atomicAdd on double is present only in recent GPU architectures.
-// If you don't have it, change the benchmark to use doubles;
-__global__ void gpu_vector_sum_2(double *x, double *res, int N) {
-    double sum = double(0);
+// Note: atomicAdd on float is present only in recent GPU architectures.
+// If you don't have it, change the benchmark to use floats;
+__global__ void gpu_vector_sum_2(float *x, float *res, int N) {
+    float sum = float(0);
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < N; i += blockDim.x * gridDim.x) {
         sum += x[i];
     }
@@ -101,21 +101,21 @@ void VectorSum::alloc() {
     // Compute the number of blocks for implementations where the value is a function of the input size;
     B = (N + block_size - 1) / block_size;
     // Allocate CPU data;
-    x = (double*) malloc(sizeof(double) * N);
-    // cudaMallocHost(&x, sizeof(double) * N); // You can use cudaMallocHost to get faster transfer speed. Don't use it too much though, it slows down CPU memory;
-    res_tmp = (double*) malloc(sizeof(double) * B);
+    x = (float*) malloc(sizeof(float) * N);
+    // cudaMallocHost(&x, sizeof(float) * N); // You can use cudaMallocHost to get faster transfer speed. Don't use it too much though, it slows down CPU memory;
+    res_tmp = (float*) malloc(sizeof(float) * B);
     // Allocate GPU data;
-    err = cudaMalloc(&x_d, sizeof(double) * N);
+    err = cudaMalloc(&x_d, sizeof(float) * N);
     // The GPU output buffer has size equal to the number of blocks, 
     // as we aggregate partial sums on the CPU;
-    err = cudaMalloc(&res_tmp_d, sizeof(double) * B);
+    err = cudaMalloc(&res_tmp_d, sizeof(float) * B);
 }
 
 // Initialize data;
 void VectorSum::init() {
     // Just put some values into the array;
     for (int i = 0; i < N; i++) {
-        x[i] = double(1) / (i + 1);
+        x[i] = float(1) / (i + 1);
     }
 }
 
@@ -125,18 +125,18 @@ void VectorSum::reset() {
     // Reset the result;
     res = 0.0;
     // Transfer data to the GPU;
-    cudaMemcpy(x_d, x, sizeof(double) * N, cudaMemcpyHostToDevice);
+    cudaMemcpy(x_d, x, sizeof(float) * N, cudaMemcpyHostToDevice);
     // Reset temporary result vector (required only by some implementations);
-    cudaMemset(res_tmp_d, 0, sizeof(double) * B);
+    cudaMemset(res_tmp_d, 0, sizeof(float) * B);
 }
 
 void VectorSum::vector_sum_0(int iter) {
     auto start_tmp = clock_type::now();
     // Call the GPU computation (and set the size of shared memory!);
-    gpu_vector_sum_0<<<B, block_size, sizeof(double) * block_size>>>(x_d, res_tmp_d, N);
+    gpu_vector_sum_0<<<B, block_size, sizeof(float) * block_size>>>(x_d, res_tmp_d, N);
     int second_block_size = (B + block_size - 1) / block_size; // Do it again, to further reduce the amount of data to move back to CPU;
     if (second_block_size > 0) { // If the input data is small enough, this second step is not necessary;
-        gpu_vector_sum_0<<<second_block_size, block_size, sizeof(double) * block_size>>>(res_tmp_d, res_tmp_d, B);
+        gpu_vector_sum_0<<<second_block_size, block_size, sizeof(float) * block_size>>>(res_tmp_d, res_tmp_d, B);
     } else {
         second_block_size = B;
     }
@@ -147,11 +147,11 @@ void VectorSum::vector_sum_0(int iter) {
         cudaDeviceSynchronize();
         auto end_tmp = clock_type::now();
         auto exec_time = chrono::duration_cast<chrono::microseconds>(end_tmp - start_tmp).count();
-        std::cout << "  pure GPU execution(" << iter << ")=" << double(exec_time) / 1000 << " ms, " << (sizeof(double) * N / (exec_time * 1e3)) << " GB/s" << std::endl;
+        std::cout << "  pure GPU execution(" << iter << ")=" << float(exec_time) / 1000 << " ms, " << (sizeof(float) * N / (exec_time * 1e3)) << " GB/s" << std::endl;
     }
 
     // Copy the partial result from the GPU to the CPU;
-    cudaMemcpy(res_tmp, res_tmp_d, sizeof(double) * second_block_size, cudaMemcpyDeviceToHost);
+    cudaMemcpy(res_tmp, res_tmp_d, sizeof(float) * second_block_size, cudaMemcpyDeviceToHost);
     // Sum the partial results using the CPU;
     for (int i = 0; i < second_block_size; i++) {
         res += res_tmp[i];
@@ -162,10 +162,10 @@ void VectorSum::vector_sum_0(int iter) {
 void VectorSum::vector_sum_1(int iter) {
     auto start_tmp = clock_type::now();
     // Call the GPU computation (and set the size of shared memory!);
-    gpu_vector_sum_1<<<B, block_size, sizeof(double) * block_size>>>(x_d, res_tmp_d, N);
+    gpu_vector_sum_1<<<B, block_size, sizeof(float) * block_size>>>(x_d, res_tmp_d, N);
     int second_block_size = (B + block_size - 1) / block_size; // Do it again, to further reduce the amount of data to move back to CPU;
     if (second_block_size > 0) { // If the input data is small enough, this second step is not necessary;
-        gpu_vector_sum_1<<<second_block_size, block_size, sizeof(double) * block_size>>>(res_tmp_d, res_tmp_d, B);
+        gpu_vector_sum_1<<<second_block_size, block_size, sizeof(float) * block_size>>>(res_tmp_d, res_tmp_d, B);
     } else {
         second_block_size = B;
     }
@@ -176,11 +176,11 @@ void VectorSum::vector_sum_1(int iter) {
         cudaDeviceSynchronize();
         auto end_tmp = clock_type::now();
         auto exec_time = chrono::duration_cast<chrono::microseconds>(end_tmp - start_tmp).count();
-        std::cout << "  pure GPU execution(" << iter << ")=" << double(exec_time) / 1000 << " ms, " << (sizeof(double) * N / (exec_time * 1e3)) << " GB/s" << std::endl;
+        std::cout << "  pure GPU execution(" << iter << ")=" << float(exec_time) / 1000 << " ms, " << (sizeof(float) * N / (exec_time * 1e3)) << " GB/s" << std::endl;
     }
 
     // Copy the partial result from the GPU to the CPU;
-    cudaMemcpy(res_tmp, res_tmp_d, sizeof(double) * second_block_size, cudaMemcpyDeviceToHost);
+    cudaMemcpy(res_tmp, res_tmp_d, sizeof(float) * second_block_size, cudaMemcpyDeviceToHost);
     // Sum the partial results using the CPU;
     for (int i = 0; i < second_block_size; i++) {
         res += res_tmp[i];
@@ -202,11 +202,11 @@ void VectorSum::vector_sum_2(int iter) {
         cudaDeviceSynchronize();
         auto end_tmp = clock_type::now();
         auto exec_time = chrono::duration_cast<chrono::microseconds>(end_tmp - start_tmp).count();
-        std::cout << "  pure GPU execution(" << iter << ")=" << double(exec_time) / 1000 << " ms, " << (sizeof(double) * N / (exec_time * 1e3)) << " GB/s" << std::endl;
+        std::cout << "  pure GPU execution(" << iter << ")=" << float(exec_time) / 1000 << " ms, " << (sizeof(float) * N / (exec_time * 1e3)) << " GB/s" << std::endl;
     }
 
     // Copy the partial result from the GPU to the CPU;
-    cudaMemcpy(&res, res_tmp_d, sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&res, res_tmp_d, sizeof(float), cudaMemcpyDeviceToHost);
 }
 
 void VectorSum::execute(int iter) {
@@ -234,7 +234,7 @@ void VectorSum::cpu_validation(int iter) {
     }
     auto end_tmp = clock_type::now();
     auto exec_time = chrono::duration_cast<chrono::microseconds>(end_tmp - start_tmp).count();
-    std::cout << "exec time CPU=" << double(exec_time) / 1000 << " ms" << std::endl;
+    std::cout << "exec time CPU=" << float(exec_time) / 1000 << " ms" << std::endl;
     if (std::abs(res - cpu_result) > 1e-4) std::cout << "result error! GPU=" << res << ", CPU=" << cpu_result << std::endl; 
 }
 
