@@ -49,12 +49,21 @@
 #define DEFAULT_NVPROF false
 #define DEFAULT_DO_CPU_VALIDATION false
 
+// Options for PPR;
+// #define DEFAULT_GRAPH "data/small.mtx"
+#define DEFAULT_GRAPH "data/California.mtx"
+// #define DEFAULT_GRAPH "data/wikipedia-20070206.mtx"
+#define DEFAULT_ALPHA 0.85
+#define DEFAULT_MAX_ITER 30
+#define DEFAULT_CONVERGENCE 1e-6
+
 //////////////////////////////
 //////////////////////////////
 
 enum BenchmarkEnum {
     VEC,
     MMUL,
+    PPR,
     ERR
 };
 
@@ -66,6 +75,8 @@ inline BenchmarkEnum get_benchmark(std::string benchmark) {
         return BenchmarkEnum::VEC;
     if (benchmark == "mmul")
         return BenchmarkEnum::MMUL;
+    if (benchmark == "ppr")
+        return BenchmarkEnum::PPR;
     else
         return BenchmarkEnum::ERR;
 }
@@ -82,6 +93,10 @@ struct Options {
     BenchmarkEnum benchmark_choice = get_benchmark(DEFAULT_BENCHMARK);
     int implementation = 0;
     int do_cpu_validation = DEFAULT_DO_CPU_VALIDATION;
+    std::string graph = DEFAULT_GRAPH;
+    double alpha = DEFAULT_ALPHA;
+    int maximum_iterations = DEFAULT_MAX_ITER;
+    double convergence_threshold = DEFAULT_CONVERGENCE;
 
     // Used for printing;
     std::map<BenchmarkEnum, std::string> benchmark_map;
@@ -92,7 +107,8 @@ struct Options {
     Options(int argc, char *argv[]) {
         map_init(benchmark_map)
                 (BenchmarkEnum::VEC, "vec")
-                (BenchmarkEnum::MMUL, "mmul");
+                (BenchmarkEnum::MMUL, "mmul")
+                (BenchmarkEnum::PPR, "ppr");
 
         int opt;
         static struct option long_options[] = {{"debug", no_argument, 0, 'd'},
@@ -105,11 +121,15 @@ struct Options {
                                                {"nvprof", no_argument, 0, 'v'},
                                                {"implementation", required_argument, 0, 'I'},
                                                {"cpu_validation", no_argument, 0, 'c'},
+                                               {"path_to_graph", required_argument, 0, 'g'},
+                                               {"alpha", required_argument, 0, 'a'},
+                                               {"max_iterations", required_argument, 0, 'm'},
+                                               {"convergence_threshold", required_argument, 0, 'e'},
                                                {0, 0, 0, 0}};
         // getopt_long stores the option index here;
         int option_index = 0;
 
-        while ((opt = getopt_long(argc, argv, "di:n:t:B:s:b:vI:c", long_options, &option_index)) != EOF) {
+        while ((opt = getopt_long(argc, argv, "di:n:t:B:s:b:vI:cg:a:m:e:", long_options, &option_index)) != EOF) {
             switch (opt) {
                 case 'd':
                     debug = true;
@@ -140,6 +160,18 @@ struct Options {
                     break;
                 case 'c':
                     do_cpu_validation = true;
+                    break;
+                case 'g':
+                    graph = optarg;
+                    break;
+                case 'a':
+                    alpha = atof(optarg);
+                    break;
+                case 'm':
+                    maximum_iterations = atoi(optarg);
+                    break;
+                case 'e':
+                    convergence_threshold = atof(optarg);
                     break;
                 default:
                     break;

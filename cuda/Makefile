@@ -30,12 +30,12 @@
 # Use NVCC.
 # Set the appropriate GPU architecture, check https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
 CXX=nvcc
-FLAGS = -O3 -std=c++11 -arch=sm_75 -lcublas
+FLAGS = -O2 -std=c++11 -arch=sm_75 -lcublas
 
 BIN_FOLDER=bin
 SRC_FOLDER=src
 FILES=${SRC_FOLDER}/main.cu ${SRC_FOLDER}/mmio.cpp ${SRC_FOLDER}/benchmark.cu
-GPU_FILES=${SRC_FOLDER}/benchmarks/vector_sum.cu ${SRC_FOLDER}/benchmarks/matrix_multiplication.cu 
+GPU_FILES=${SRC_FOLDER}/benchmarks/vector_sum.cu ${SRC_FOLDER}/benchmarks/matrix_multiplication.cu ${SRC_FOLDER}/benchmarks/personalized_pagerank.cu 
 .PHONY: all clean
 
 all:
