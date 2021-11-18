@@ -32,6 +32,7 @@ bin/b -d -c -n 1000 -b vec -I 1 -i 30 -t 32 -B 64
 * `-I`: implementation to use for a given benchmark. For example, `vec` has 3 different implementations (0, 1, 2).
 * `-s`: warm-up iterations to skip when computing the average execution time (3 by default).
 * `-v`: if using `nvprof`, using `-v` ensures that the profiler captures only the GPU computation and not the benchmark initialization or CPU validation, making profiling simpler. 
+
 **Additional options for Personalized PageRank**
 * `-g`: path to the MTX file of the input graph (`California` by default)
 * `-a`: value of alpha (damping factor), from 0 to 1 (0.85 by default)
