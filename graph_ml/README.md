@@ -28,7 +28,7 @@ The evaluation metric for this competition is [Mean F1-Score](https://en.wikiped
 
 The F1 score is given by:
 
-<img src="https://render.githubusercontent.com/render/math?math=F1 = 2\frac{P \cdot R}{P+R}\ \ \mathrm{where}\ \ P = \frac{TP}{TP+FP},\ \ R = \frac{TP}{TP+FN}">
+<img src="https://render.githubusercontent.com/render/math?math=F1 = 2\frac{P \cdot R}{P%2BR}\ \ \mathrm{where}\ \ P = \frac{TP}{TP%2BFP},\ \ R = \frac{TP}{TP%2BFN}">
 
 The F1 metric weights recall and precision equally, and a good link prediction algorithm will maximize both precision and recall simultaneously. Thus, moderately good performance on both will be favored over extremely good performance on one and poor performance on the other.
 
