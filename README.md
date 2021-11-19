@@ -2,3 +2,4 @@
 Repository for the course High-Performance Data &amp; Graph Analytics at Polimi, Fall 2021
 
 * `cuda` contains the source code for the GPU track of the contest. See the `readme` in the folder for more information.
+* `graph_ml` contains the source code for the Graph Machine Learning track of the contest. See the `readme` in the folder for more information.
